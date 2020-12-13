@@ -4,9 +4,14 @@ from random import random
 from nodo_puntaje import Nodo_Puntaje
 from nodo import Nodo
 import csv
+import json
+import time
+import os
 
 # CONSTANTES
 notasCsv = []
+bitacora = {}
+bitacora['registro'] = []
 valMin = -2
 valMax = 2 
 numeroPoblacion = 10
@@ -14,8 +19,17 @@ contadorGeneracion = 0
 maximoGeneraciones = 30000
 criterioValMinIgual = 0.5
 
-def cargarArchivo():
-   with open('Practica1_Entrada.csv') as csvFile:
+"""
+* Funcion que  carga o crea un archivo llamado bitacora para llevar el registro de las pruebas 
+"""
+def inicializarBitacora():
+   global bitacora 
+   if os.path.isfile('bitacora.json'):
+      with open('bitacora.json') as file:
+         bitacora = json.load(file)
+
+def cargarArchivo(nombreDocumentoCsv):
+   with open(nombreDocumentoCsv) as csvFile:
       reader = csv.DictReader(csvFile)
       for row in reader:
          resultados = Nodo_Puntaje(float(row['PROYECTO 1']),float(row['PROYECTO 2']),float(row['PROYECTO 3']),float(row['PROYECTO 4']),float(row['NOTA FINAL']),0)
@@ -29,35 +43,36 @@ def inicializarPoblacion():
       solucion = calcularSolucion() #devuelve un arreglo de 4 elementos
       individuo = Nodo(solucion,calcularFitness(solucion))
       poblacion.append(individuo)
-
    return poblacion
 
 """
 *  VERIFICAR CRITERIO
 """
 def verificarCriterio(poblacion, generacion,tipoCriterio):
+
+   if tipoCriterio == 0: #Un valor Maximo o Minimo alcanzado por una solucion de la poblacion 
+      for individuo in poblacion:
+         if individuo.fitness <= criterioValMinIgual: # se evalua por un minimo estipulado
+            return True
+   elif tipoCriterio == 1: #maximo numero de generaciones
    #Un valor maximo o minimo alcanzado por una solucion de la poblacion
-   if generacion >= maximoGeneraciones:
-      return True
-   #se va a evaluar por por un fitnes a criterio personal
-   for individuo in poblacion:
-      if individuo.fitness <= criterioValMinIgual:
+      if generacion >= maximoGeneraciones:
          return True
+   
    return None
 
 
 """
 *SELECCIONAR PADRES
 """
-def seleccionarPadres(poblacion):
+def seleccionarPadres(poblacion,seleccion_padres):
    padres = []
-   #Selección de los padres con mejor valor fitness
-   
-   #Se ordena de menor a mayor para solo agarrar la mitad de los datos
-   padres_ordenados = sorted(poblacion,key=lambda item: item.fitness, reverse=False)[:len(poblacion)]
-   x= (int(numeroPoblacion/2)) # la mitad de la poblacion
-   for i in range(0,x):
-      padres.append(padres_ordenados[i])
+   if seleccion_padres == 0: #SELECCION DE LOS PADRES CON MEJOR FITNESS
+      #Se ordena de menor a mayor para solo agarrar la mitad de los datos
+      padres_ordenados = sorted(poblacion,key=lambda item: item.fitness, reverse=False)[:len(poblacion)]
+      x= (int(numeroPoblacion/2)) # la mitad de la poblacion
+      for i in range(0,x):
+         padres.append(padres_ordenados[i])
    return padres
 
 """
@@ -141,23 +156,41 @@ def calcularFitness(solucion):
 * Funcionalidad del programa
 """
 def ejecutar():
+   #BITACORA
+   inicializarBitacora()
+   #GENERACIONES
    generacion = 0
-   cargarArchivo()
+   #CONFIGURANDO CARGA DE ARCHIVO CSV
+   nombreDocumentoCsv = "Practica1_Entrada.csv"
+   #ESCOGIENDO CREITERIO DE FINALIZACION
+   criterio_finalizacion = 0
+   """
+   * CRITERIOS DE FINALIZACION
+   0  :   VALOR MINIMO ALCANZADO POR UNA SOLUCION DE LA POBLACION
+   1  :  MAXIMO NUMERO DE GENERACION
+   2  :  VALOR FITNESS PROMEDIO DENTRO DE LA POBLACION
+   """
+   #ESCOGIENDO CRITERIO DE SELECCION
+   criterio_seleccion = 0
+   """
+   * CRITERIOS DE SELECCION
+   0  : SELECCION DE LOS PADRES CON MEJOR FITNESS
+   1  : SELECCION POR TORNEO
+   2  : SELECCION DE PADRES EN POSICIONES PARES 
+   """
+
+   cargarArchivo(nombreDocumentoCsv)
    poblacion = inicializarPoblacion() #retorna un arreglo de n individuos
-   fin = verificarCriterio(poblacion,generacion,0)
+   fin = verificarCriterio(poblacion,generacion,criterio_finalizacion)
    print('*************** GENERACION ', generacion, " ***************")
    for individuo in poblacion:
       print('individuo: ', individuo.solucion,' fitness: ', individuo.fitness)
-   # padres = seleccionarPadres(poblacion)
-   # print('tamanio: ',len(padres))
-   # for nodo in padres:
-   #    print('fitness:',nodo.fitness,'solucion:',nodo.solucion)
    
    while(fin == None):
-      padres = seleccionarPadres(poblacion)
+      padres = seleccionarPadres(poblacion,criterio_seleccion)
       poblacion = emparejar(padres)
       generacion +=1
-      fin = verificarCriterio(poblacion,generacion,0)
+      fin = verificarCriterio(poblacion,generacion,criterio_finalizacion)
       
       print('*************** GENERACION ', generacion, " ***************")
       for individuo in poblacion:
@@ -167,8 +200,34 @@ def ejecutar():
    
    print('\n\n*************** MEJOR INDIVIDUO***************')
    print('Individuo: ', mejorIndividuo[0].solucion, ' Fitness: ', mejorIndividuo[0].fitness)
-   # sol = calcularSolucion()
-   # for solucion in sol:
-   #    print(solucion)
+   #registrando en la bitacora
+   
+   if criterio_finalizacion == 0:
+      criterio_finalizacion = 'VALOR MINIMO ALCANZADO POR UNA SOLUCION DE LA POBLACION CON UN VALOR DE : ' + str(criterioValMinIgual) 
+   elif criterio_finalizacion == 1:
+      criterio_finalizacion = 'MAXIMO NUMERO DE GENERACION'
+   
+   if criterio_seleccion == 0:
+      criterio_seleccion = 'SELECCION DE LOS PADRES CON MEJOR FITNESS'
 
+   bitacora['registro'].append({
+      'fecha_hora': time.strftime("%c"),
+      'doc': nombreDocumentoCsv,
+      'criterio_finalizacion': criterio_finalizacion,
+      'criterio_seleccion': criterio_seleccion,
+      'generaciones_generadas': generacion,
+      'mejor_solucion': mejorIndividuo[0].solucion,
+      'fitness': mejorIndividuo[0].fitness
+   })
+   with open('bitacora.json','w') as file:
+      json.dump(bitacora,file,indent=4)
+
+def ejecutar2():
+   # with open('bitacora.json') as file:
+   #    bitacora = json.load(file)
+   inicializarBitacora()
+   for info in bitacora['registro']:
+      print('fecha: ',info['fecha_hora'])
 ejecutar()
+
+

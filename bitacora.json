@@ -1,0 +1,46 @@
+{
+    "registro": [
+        {
+            "fecha_hora": "Sun Dec 13 17:18:07 2020",
+            "doc": "Practica1_Entrada.csv",
+            "criterio_finalizacion": "VALOR MINIMO ALCANZADO POR UNA SOLUCION DE LA POBLACION",
+            "criterio_seleccion": "SELECCION DE LOS PADRES CON MEJOR FITNESS",
+            "generaciones_generadas": 2800,
+            "mejor_solucion": [
+                0.14,
+                0.15,
+                0.3,
+                0.41
+            ],
+            "fitness": 0.16773420000000028
+        },
+        {
+            "fecha_hora": "Sun Dec 13 17:35:51 2020",
+            "doc": "Practica1_Entrada.csv",
+            "criterio_finalizacion": "VALOR MINIMO ALCANZADO POR UNA SOLUCION DE LA POBLACION",
+            "criterio_seleccion": "SELECCION DE LOS PADRES CON MEJOR FITNESS",
+            "generaciones_generadas": 30652,
+            "mejor_solucion": [
+                0.16,
+                0.15,
+                0.3,
+                0.4
+            ],
+            "fitness": 0.3433084000000007
+        },
+        {
+            "fecha_hora": "Sun Dec 13 17:47:21 2020",
+            "doc": "Practica1_Entrada.csv",
+            "criterio_finalizacion": "VALOR MINIMO ALCANZADO POR UNA SOLUCION DE LA POBLACION CON UN VALOR DE : 0.5",
+            "criterio_seleccion": "SELECCION DE LOS PADRES CON MEJOR FITNESS",
+            "generaciones_generadas": 2028,
+            "mejor_solucion": [
+                0.14,
+                0.16,
+                0.31,
+                0.39
+            ],
+            "fitness": 0.33890100000000095
+        }
+    ]
+}
